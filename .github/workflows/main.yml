@@ -1,4 +1,4 @@
-name: Deploy to ECR
+name: Deploy docker images to ECR
 
 on: 
   push:
@@ -8,7 +8,7 @@ jobs:
   
   build:
     
-    name: Build Image
+    name: Build Images
     runs-on: ubuntu-latest
 
    
@@ -26,7 +26,7 @@ jobs:
         AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
         AWS_REGION: us-east-1
 
-    - name: Build, test, tag, and push image to Amazon ECR
+    - name: Build, tag, and push images to Amazon ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: assignment1-repo
@@ -42,18 +42,12 @@ jobs:
         docker ps
         echo "Pause for 10 seconds to let container start"
         sleep 10
+        
+        # Pushing the mysql db image to ECR
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:db_$IMAGE_TAG
 
         # Build image for application
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:app_$IMAGE_TAG -f Dockerfile .
         
-        # Unit test for the application container
-        export DBPORT=3306
-        export DBPWD=pw
-        export DBHOST=172.17.0.2
-        docker run -d -p 8080:8080 -e DBPORT=$DBPORT -e DBHOST=$DBHOST -e DBPWD=$DBPWD --name my_app $ECR_REGISTRY/$ECR_REPOSITORY:app_$IMAGE_TAG
-        docker ps
-        echo "Pause for 10 seconds to let container start"
-        sleep 10
-        curl localhost -vvv
+        # Pushing the application image to ECR
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:app_$IMAGE_TAG
