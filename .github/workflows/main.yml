@@ -34,12 +34,23 @@ jobs:
       run: |
         cd clo835_summer2023_assignment1-main/
         ls -ltra
-        # Docker build command
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        # Unit test
-        docker run -d -p 8080:8080 --name my_app $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        # Build image for mysql db
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:db_$IMAGE_TAG -f Dockerfile_mysql .
+
+        # Unit test for mysql container
+        docker run -d --name my_db $ECR_REGISTRY/$ECR_REPOSITORY:db_$IMAGE_TAG
+        docker ps
+        echo "Pause for 10 seconds to let container start"
+        sleep 10
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:db_$IMAGE_TAG
+
+        # Build image for application
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:app_$IMAGE_TAG -f Dockerfile.
+        
+        # Unit test for the application container
+        docker run -d -p 8080:8080 --name my_app $ECR_REGISTRY/$ECR_REPOSITORY:app_$IMAGE_TAG
         docker ps
         echo "Pause for 10 seconds to let container start"
         sleep 10
         curl localhost -vvv
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:app_$IMAGE_TAG
