@@ -48,8 +48,8 @@ resource "aws_instance" "my_amazon" {
 
 # Security Group
 resource "aws_security_group" "my_sg" {
-  name        = "allow_ssh"
-  description = "Allow SSH inbound traffic"
+  name        = "allow_ssh_and_http"
+  description = "Allow SSH and custom HTTP inbound traffic"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
@@ -59,6 +59,31 @@ resource "aws_security_group" "my_sg" {
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
+  }
+
+  # Inbound rules for enabling custom tcp ports to run the application on different ports
+  ingress {
+    description      = "HTTP port 8081"
+    from_port        = 8081
+    to_port          = 8081
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+  
+  ingress {
+    description      = "HTTP port 8082"
+    from_port        = 8082
+    to_port          = 8082
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+  
+  ingress {
+    description      = "HTTP port 8083"
+    from_port        = 8083
+    to_port          = 8083
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
   }
 
   egress {
